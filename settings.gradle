@@ -1,1 +1,2 @@
 include ':app'
+include 'com.github.PhilJay:MPAndroidChart:v2.2.4'
