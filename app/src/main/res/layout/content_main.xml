@@ -4,25 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Stock Name"
-        android:id="@+id/stockName"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ticker"
-        android:layout_toRightOf="@id/stockName"
-        android:id="@+id/ticker"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Open"/>
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/chart"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:text="Generate Data"
+        android:id="@+id/genData"
         />
 
 </LinearLayout>
