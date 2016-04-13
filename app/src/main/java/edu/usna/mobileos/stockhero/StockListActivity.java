@@ -1,36 +1,47 @@
 package edu.usna.mobileos.stockhero;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by m164488 on 4/12/2016.
+ * This Activity pulls in the applicable stock data and displays it in a list view
  */
 
 
-public class StockListActivity {
+public class StockListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
 
-    public ListView stockListView;
-    public ArrayAdapter<String> adapter;
-    public List<String> rssItemList = new ArrayList<String>();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.stock_list);
+        Intent intent = getIntent();
+        String date = intent.getStringExtra("date");
+        Log.d("date", date);
 
-    stockListView = (ListView) findViewById(R.id.stockListView);
-    adapter = new RssItemAdapter(this, android.R.layout.simple_list_item_1, rssItemList);
-    newsListView.setAdapter(adapter);
-    newsListView.setOnItemClickListener(this);
+        ListView stockListView = (ListView) findViewById(R.id.stockListView);
+        DowIndex di = new DowIndex();
+        List stockList = Arrays.asList(di.getDow(date));
+
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, stockList);
+        stockListView.setAdapter(adapter);
+        stockListView.setOnItemClickListener(this);
+    }
 
     public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-        // actions to execute to do when an item is clicked
-
-        RssItem RssItemClicked = adapter.getItem(pos);
-        Toast.makeText(getBaseContext(), RssItemClicked.getPubDate(), Toast.LENGTH_SHORT).show();
-        Toast.makeText(getBaseContext(), RssItemClicked.getLink(), Toast.LENGTH_SHORT).show();
-
+        String stock = ((TextView)view).getText().toString();
+        Intent intent = new Intent(getBaseContext(), StockHistoryActivity.class);
+        intent.putExtra("stock", stock);
+        startActivity(intent);
     }
+
 }

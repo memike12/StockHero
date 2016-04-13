@@ -1,42 +1,30 @@
 package edu.usna.mobileos.stockhero;
 
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.github.mikephil.charting.charts.CombinedChart;
-import com.github.mikephil.charting.charts.CombinedChart.DrawOrder;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.XAxis.XAxisPosition;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.BubbleData;
-import com.github.mikephil.charting.data.BubbleDataSet;
-import com.github.mikephil.charting.data.BubbleEntry;
-import com.github.mikephil.charting.data.CandleData;
-import com.github.mikephil.charting.data.CandleDataSet;
-import com.github.mikephil.charting.data.CandleEntry;
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.data.ScatterData;
-import com.github.mikephil.charting.data.ScatterDataSet;
 import com.github.mikephil.charting.formatter.LargeValueFormatter;
-import com.github.mikephil.charting.interfaces.datasets.IDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import android.graphics.Color;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 public class StockHistoryActivity extends AppCompatActivity{
@@ -80,7 +68,6 @@ public class StockHistoryActivity extends AppCompatActivity{
 
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setDrawGridLines(false);
-        //leftAxis.setAxisMinValue(0f);// this replaces setStartAtZero(true)
 
         leftAxis.setAxisMaxValue(getMaxFromData(toFloatArray(volume))*15);
         leftAxis.setEnabled(false);
@@ -98,8 +85,12 @@ public class StockHistoryActivity extends AppCompatActivity{
         mChart.invalidate();
     }
 
-    private LineData generateLineData() {
+    public void goBack(View v){
+        Intent intent = new Intent(getBaseContext(), StockListActivity.class);
+        startActivity(intent);
+    }
 
+    private LineData generateLineData() {
         LineData d = new LineData();
 
         ArrayList<Entry> entries = new ArrayList<Entry>();
@@ -158,6 +149,7 @@ public class StockHistoryActivity extends AppCompatActivity{
         }
         return max;
     }
+
     private String[] getTimeframe(){
         String[] dates = {"2014-04-07", "2014-04-08", "2014-04-09", "2014-04-10","2014-04-11"};
         String[] names = new String[close.length];

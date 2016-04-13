@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':com.github.PhilJay:MPAndroidChart', ':com.github.PhilJay', ':com.github.PhilJay:MPAndroidChart:v2.2.4'
 include 'com.github.PhilJay:MPAndroidChart:v2.2.4'

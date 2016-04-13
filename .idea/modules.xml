@@ -3,12 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/MPAndroidChart.iml" filepath="$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/MPAndroidChart.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/MPAndroidChart.iml" filepath="$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/MPAndroidChart.iml" />
       <module fileurl="file://$PROJECT_DIR$/StockHero.iml" filepath="$PROJECT_DIR$/StockHero.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/com.github.PhilJay/com.github.PhilJay.iml" filepath="$PROJECT_DIR$/com.github.PhilJay/com.github.PhilJay.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.github.PhilJay/com.github.PhilJay.iml" filepath="$PROJECT_DIR$/com.github.PhilJay/com.github.PhilJay.iml" />
-      <module fileurl="file://$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/v2.2.4/v2.2.4.iml" filepath="$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/v2.2.4/v2.2.4.iml" />
       <module fileurl="file://$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/v2.2.4/v2.2.4.iml" filepath="$PROJECT_DIR$/com.github.PhilJay/MPAndroidChart/v2.2.4/v2.2.4.iml" />
     </modules>
   </component>

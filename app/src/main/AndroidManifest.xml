@@ -18,6 +18,9 @@
         <activity
             android:name=".StockHistoryActivity">
         </activity>
+        <activity
+            android:name=".StockListActivity">
+        </activity>
     </application>
 
 </manifest>
