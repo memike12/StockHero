@@ -30,11 +30,10 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 DateTime date = generateDate();
                 Intent intent = new Intent(getBaseContext(), StockListActivity.class);
-                intent.putExtra("date", fmt.print(date));
+                intent.putExtra("date", String.valueOf(fmt.print(date)));
                 startActivity(intent);
             }
         });
-
     }
 
     private DateTime generateDate(){

@@ -2,13 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:weightSum="1">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Welcome to your first day at Silverman Bags! You are starting out as a stock analyst and we are going to start you off by throwing you right into trading with a small fund we set up for you to prove your trading skill. Each week we will give you a set of stocks to choose from and goals to hit for promotion."
+        android:id="@+id/textView"
+        android:layout_weight="0.27" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Ready?"
+        android:id="@+id/textView2"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.59" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Generate Data"
+        android:text="Let's Start Trading!"
         android:id="@+id/genData"
-        />
+        android:layout_gravity="center_horizontal" />
 
 </LinearLayout>

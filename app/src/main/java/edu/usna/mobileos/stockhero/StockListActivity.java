@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,15 +20,16 @@ import java.util.List;
 
 
 public class StockListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
+    String date;
+    int request_Code;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stock_list);
         Intent intent = getIntent();
-        String date = intent.getStringExtra("date");
-        Log.d("date", date);
-
+        date = intent.getStringExtra("date");
+        Toast.makeText(this, date, Toast.LENGTH_SHORT).show();
         ListView stockListView = (ListView) findViewById(R.id.stockListView);
         DowIndex di = new DowIndex();
         List stockList = Arrays.asList(di.getDow(date));
@@ -37,11 +39,31 @@ public class StockListActivity extends AppCompatActivity implements AdapterView.
         stockListView.setOnItemClickListener(this);
     }
 
+
     public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
         String stock = ((TextView)view).getText().toString();
-        Intent intent = new Intent(getBaseContext(), StockHistoryActivity.class);
-        intent.putExtra("stock", stock);
-        startActivity(intent);
+        Intent intent = new Intent(this, StockHistoryActivity.class);
+
+        Bundle extras = new Bundle();
+        extras.putString("stock", stock);
+        extras.putString("date", date);
+        intent.putExtras(extras);
+        request_Code = 100;
+        startActivityForResult(intent, request_Code);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        // check to see which activity is returning the result
+        if (requestCode == 100) {
+            // check result code
+            if (resultCode == RESULT_OK) {
+                // get data set with setData
+                String choice = data.getExtras().getString("choice");
+                Toast.makeText(StockListActivity.this, choice, Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
 
 }
