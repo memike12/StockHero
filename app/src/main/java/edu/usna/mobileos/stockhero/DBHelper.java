@@ -9,12 +9,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 
 /**
  * Created by root on 4/18/16.
@@ -26,12 +24,12 @@ public class DBHelper extends SQLiteOpenHelper {
     private Context myContext;
     public SQLiteDatabase myDataBase;
 
-    public DBHelper(Context context) throws IOException {
+    public DBHelper(Context context){
         super(context, DATABASE_NAME , null, 1);
         this.myContext=context;
         DATABASE_PATH = myContext.getApplicationInfo().dataDir + "/databases/";
     }
-    public void createDataBase() throws IOException{
+    public void createDataBase(){
         boolean dbExist = checkDataBase();
         if(dbExist){
 //            Log.i("Database","exists");
@@ -147,19 +145,22 @@ public class DBHelper extends SQLiteOpenHelper {
         return c;
     }
 
-//    public ArrayList<String> getAllCotacts()
-//    {
-//        ArrayList<String> array_list = new ArrayList<String>();
-//
-//        //hp = new HashMap();
-//        SQLiteDatabase db = this.getReadableDatabase();
-//        Cursor res =  db.rawQuery( "select * from contacts", null );
-//        res.moveToFirst();
-//
-//        while(res.isAfterLast() == false){
-//            array_list.add(res.getString(res.getColumnIndex(CONTACTS_COLUMN_NAME)));
-//            res.moveToNext();
-//        }
-//        return array_list;
-//    }
+    public boolean CheckIfDateInDB(String date){
+        SQLiteDatabase db = getReadableDatabase();
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+
+        String [] sqlSelect = {"*"};
+        String sqlTables = "price";
+        String sel = "date='"+date+"'";
+        qb.setTables(sqlTables);
+
+        Cursor c = qb.query(db, sqlSelect, sel, null,
+                null, null, null);
+        if(c.getCount() > 0){
+            c.close();
+            return true;
+        }
+        c.close();
+        return false;
+    }
 }
