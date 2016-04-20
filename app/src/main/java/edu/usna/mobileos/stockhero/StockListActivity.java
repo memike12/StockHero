@@ -1,10 +1,12 @@
 package edu.usna.mobileos.stockhero;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -19,7 +21,7 @@ import java.util.List;
  */
 
 
-public class StockListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
+public class StockListActivity extends Activity implements AdapterView.OnItemClickListener{
     String date;
     int request_Code;
 
@@ -27,10 +29,13 @@ public class StockListActivity extends AppCompatActivity implements AdapterView.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stock_list);
+
         Intent intent = getIntent();
         date = intent.getStringExtra("date");
         Toast.makeText(this, date, Toast.LENGTH_SHORT).show();
         ListView stockListView = (ListView) findViewById(R.id.stockListView);
+
+        //The di object gives me the stocks that we're using
         DowIndex di = new DowIndex();
         List stockList = Arrays.asList(di.getDow(date));
 

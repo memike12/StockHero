@@ -22,7 +22,45 @@
     <com.github.mikephil.charting.charts.CombinedChart
         android:id="@+id/chart1"
         android:layout_width="match_parent"
-        android:layout_height="429dp" />
+        android:layout_height="355dp" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="5 Days"
+            android:id="@+id/fiveDay"
+            android:state_pressed="true"/>
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="30 Days"
+            android:id="@+id/thirtyDay"
+            android:state_pressed="false"/>
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="90 Days"
+            android:id="@+id/ninetyDay"
+            android:state_pressed="false"/>
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="1 Year"
+            android:id="@+id/oneYear"
+            android:state_pressed="false"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,15 +70,15 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.33"
             android:text="Buy"
-            android:id="@+id/button"
-            android:onClick="buy"/>
+            android:id="@+id/buy"
+            />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0.33"
             android:text="Sell"
-            android:id="@+id/button2"
-            android:onClick="sell"/>
+            android:id="@+id/sell"
+           />
 
 
     </LinearLayout>

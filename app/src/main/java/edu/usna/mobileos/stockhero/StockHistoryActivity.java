@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.XAxis.XAxisPosition;
@@ -26,6 +27,7 @@ import android.graphics.Color;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,24 +37,41 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class StockHistoryActivity extends Activity {
+public class StockHistoryActivity extends Activity implements View.OnClickListener {
     private CombinedChart mChart;
-    float[] price = getData();
-    String[] days = {"2014-04-07", "2014-04-08", "2014-04-09", "2014-04-10","2014-04-11"};
-    private final int itemcount = price.length;
-    private SharedPreferences prefs;
-
-
-    int[] volume = {2807500, 2893600, 2671900, 2857200, 2368200};
-
+    int tradingYear = 252;
+    float[] price = new float[tradingYear];
+    String[] days = new String[tradingYear];
+    int[] volume = new int[tradingYear];
+    float[] periodPrice;
+    String[] periodDays;
+    int[] periodVolume;
     DBHelper db;
     String date;
     String stock;
-
+    Button sell;
+    Button buy;
+    Button fiveDay;
+    Button thirtyDay;
+    Button ninetyDay;
+    Button oneYear;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.display_stock);
+
+        sell = (Button) findViewById(R.id.sell);
+        buy = (Button) findViewById(R.id.buy);
+        fiveDay = (Button) findViewById(R.id.fiveDay);
+        thirtyDay = (Button) findViewById(R.id.thirtyDay);
+        ninetyDay = (Button) findViewById(R.id.ninetyDay);
+        oneYear = (Button) findViewById(R.id.oneYear);
+        buy.setOnClickListener(this);
+        sell.setOnClickListener(this);
+        fiveDay.setOnClickListener(this);
+        thirtyDay.setOnClickListener(this);
+        ninetyDay.setOnClickListener(this);
+        oneYear.setOnClickListener(this);
 
         Intent intent = getIntent();
         stock = intent.getExtras().getString("stock");
@@ -68,85 +87,156 @@ public class StockHistoryActivity extends Activity {
             db.openDataBase();
             Cursor cs = db.getStockInfo(stock);
             stockName.setText(cs.getString(cs.getColumnIndex("company")));
-            Cursor c = db.getHistory(stock, date);
-            for (int x = 0; x < 5; x++) {
-                price[x] = Float.parseFloat(c.getString(c.getColumnIndex("price")));
-                days[x] = c.getString(c.getColumnIndex("date"));
-                volume[x] = c.getInt(c.getColumnIndex("volume"));
-                c.moveToNext();
+            cs.close();
+            Cursor c = db.getFullStockHistory(stock);
+            int y = 0;
+            while(!c.isAfterLast()) {
+                y++;
+                if(c.getString(c.getColumnIndex("date")).equals(date)) {
+                    //Log.e(date,String.valueOf(y));
+                    for (int x = tradingYear-1; x >= 0 ; x--) {
+                        price[x] = Float.parseFloat(c.getString(c.getColumnIndex("price")));
+                        days[x] = c.getString(c.getColumnIndex("date"));
+                        volume[x] = c.getInt(c.getColumnIndex("volume"));
+                        //Log.e("Mike", x + " / " + price[x] + " / " + days[x] );
+                        c.moveToNext();
+                    }
+                    db.close();
+                    break;
+                }
+                else{
+                    c.moveToNext();
+                }
+
             }
+            c.close();
         }
         catch (Exception e){
-            Log.e("Database","Didn't Load");
+            e.printStackTrace();
             db.close();
         }
 
         Toast.makeText(this, date, Toast.LENGTH_SHORT).show();
-        days = getTimeframe(days);
+        //days = getTimeframe(days);
 
         ticker.setText(stock);
         open.setText(String.valueOf(price[price.length - 1]));
+
 
         mChart = (CombinedChart) findViewById(R.id.chart1);
         mChart.setDescription("");
         mChart.setBackgroundColor(Color.WHITE);
         mChart.setDrawGridBackground(false);
         mChart.setDrawBarShadow(false);
-
-
+        mChart.setDrawValueAboveBar(true);
         // draw bars behind lines
         mChart.setDrawOrder(new CombinedChart.DrawOrder[]{
                 CombinedChart.DrawOrder.BAR, CombinedChart.DrawOrder.BUBBLE, CombinedChart.DrawOrder.CANDLE, CombinedChart.DrawOrder.LINE, CombinedChart.DrawOrder.SCATTER
         });
 
+        //set chart time period to 5 days off the bat
+        makeChart(5);
+    }
+
+    @Override
+    public void onClick(View v){
+        switch (v.getId()){
+            case R.id.sell:
+                Intent intent = new Intent();
+                intent.putExtra("choice", "Sell");
+                setResult(RESULT_OK, intent);
+                finish();
+                break;
+            case R.id.buy:
+                Intent intent2 = new Intent();
+                intent2.putExtra("choice", "Buy");
+                setResult(RESULT_OK, intent2);
+                finish();
+                break;
+            case R.id.thirtyDay:
+                makeChart(30);
+                break;
+            case R.id.ninetyDay:
+                makeChart(90);
+                break;
+            case R.id.oneYear:
+                makeChart(252);
+                break;
+            case R.id.fiveDay:
+                makeChart(5);
+                break;
+        }
+
+    }
+    private void makeChart(int period){
+        periodPrice = new float[period];
+        periodVolume = new int[period];
+        periodDays = new String[period];
+        for(int x =0; x<period; x++){
+            periodPrice[period-x-1] = price[tradingYear-x-1];
+            periodVolume[period-x-1] = volume[tradingYear-x-1];
+            periodDays[period-x-1] = days[tradingYear-x-1];
+        }
+
+        mChart.setDoubleTapToZoomEnabled(false);
         YAxis rightAxis = mChart.getAxisRight();
-        rightAxis.setDrawGridLines(false);
-        rightAxis.setAxisMaxValue(getMaxFromData(price)*1.009f); // this replaces setStartAtZero(true)
-        rightAxis.setAxisMinValue(getMinFromData(price)*.98f);
-        rightAxis.setEnabled(false);
+        rightAxis.setDrawGridLines(true);
+        rightAxis.setAxisMaxValue(getMaxFromData(periodPrice)*1.009f); // this replaces setStartAtZero(true)
+        //Log.i("Max set", String.valueOf(getMaxFromData(periodPrice)*1.009f));
+        rightAxis.setAxisMinValue(getMinFromData(periodPrice)*.95f);
+        //Log.i("Min set", String.valueOf(getMinFromData(periodPrice)*.95f));
+        rightAxis.setEnabled(true);
 
         YAxis leftAxis = mChart.getAxisLeft();
-        leftAxis.setDrawGridLines(false);
+        leftAxis.setDrawGridLines(true);
 
-        leftAxis.setAxisMaxValue(getMaxFromData(toFloatArray(volume))*15);
+        leftAxis.setAxisMaxValue(getMaxFromData(toFloatArray(periodVolume))*15);
         leftAxis.setEnabled(false);
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxisPosition.TOP);
-
-        CombinedData data = new CombinedData(days);
-
-        data.setData(generateLineData());
-        data.setData(generateBarData());
-
+        xAxis.setEnabled(false);
+        CombinedData data = new CombinedData(periodDays);
+        data.setData(generateLineData(period));
+        data.setData(generateBarData(period));
+        switch (period) {
+            case 5:
+                //Log.i("Case","5");
+                mChart.animateX(500, Easing.EasingOption.EaseInCubic);
+                data.setDrawValues(true);
+                break;
+            case 30:
+                //Log.i("Case","30");
+                mChart.animateX(500, Easing.EasingOption.EaseInCubic);
+                data.setDrawValues(false);
+                break;
+            case 90:
+                //Log.i("Case","90");
+                mChart.animateX(700, Easing.EasingOption.EaseInCubic);
+                data.setDrawValues(false);
+                break;
+            case 252:
+                mChart.animateX(1100, Easing.EasingOption.EaseInCubic);
+                data.setDrawValues(false);
+                break;
+            default:
+                mChart.animateX(1500, Easing.EasingOption.EaseInCubic);
+                data.setDrawValues(false);
+                break;
+        }
         mChart.setData(data);
-        mChart.setDrawValueAboveBar(false);
+        mChart.getLegend().setEnabled(false);
         mChart.invalidate();
-        db.close();
     }
 
-    public void sell(View v){
-        Intent intent = new Intent();
-        intent.putExtra("choice", "Sell");
-        setResult(RESULT_OK, intent);
-        finish();
-    }
-
-    public void buy(View v){
-        Intent intent = new Intent();
-        intent.putExtra("choice", "Buy");
-        setResult(RESULT_OK, intent);
-        finish();
-    }
-
-    private LineData generateLineData() {
+    private LineData generateLineData(int period) {
         LineData d = new LineData();
 
         ArrayList<Entry> entries = new ArrayList<Entry>();
 
-        for (int index = 0; index < itemcount; index++) {
+        for (int index = 0; index < period; index++) {
             //Log.i("ClosePrice", String.valueOf(price[index]));
-            entries.add(new Entry( price[index], index));
+            entries.add(new Entry( periodPrice[index], index));
         }
 
         LineDataSet set = new LineDataSet(entries, "Price");
@@ -155,6 +245,7 @@ public class StockHistoryActivity extends Activity {
         set.setCircleColor(Color.BLACK);
         set.setCircleRadius(5f);
         set.setDrawCubic(false);
+        set.setDrawCircles(false);
         set.setDrawValues(true);
         set.setValueTextSize(20f);
         set.setValueTextColor(Color.BLACK);
@@ -166,14 +257,14 @@ public class StockHistoryActivity extends Activity {
         return d;
     }
 
-    private BarData generateBarData() {
+    private BarData generateBarData(int period) {
 
         BarData d = new BarData();
 
         ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
-        int[] volume = {2807500, 2893600, 2671900, 2857200, 2368200};
-        for (int index = 0; index < itemcount; index++)
-            entries.add(new BarEntry((float) volume[index], index));
+       // int[] volume = {2807500, 2893600, 2671900, 2857200, 2368200};
+        for (int index = 0; index < period; index++)
+            entries.add(new BarEntry((float) periodVolume[index], index));
 
         BarDataSet set = new BarDataSet(entries, "Volume");
         set.setColor(Color.rgb(36, 133, 19));
@@ -186,9 +277,9 @@ public class StockHistoryActivity extends Activity {
         return d;
     }
 
-    private float[] getData(){
-        return new float[]{134.40f, 134.84f, 135.84f, 133.97f, 132.39f};
-    }
+//    private float[] getData(){
+//        return new float[]{134.40f, 134.84f, 135.84f, 133.97f, 132.39f};
+//    }
 
     private float getMaxFromData(float[] data){
         float max = 0;
@@ -196,6 +287,7 @@ public class StockHistoryActivity extends Activity {
             if (max<data[i])
                 max = data[i];
         }
+        //Log.i("Max", String.valueOf(max));
         return max;
     }
 
@@ -205,12 +297,13 @@ public class StockHistoryActivity extends Activity {
             if (min>data[i])
                 min = data[i];
         }
+        //Log.i("Min", String.valueOf(min));
         return min;
     }
 
     private String[] getTimeframe(String[] dates){
-        String[] names = new String[price.length];
-        for(int i = 0; i < price.length; i++){
+        String[] names = new String[dates.length];
+        for(int i = 0; i < dates.length; i++){
             try {
                 Date day = new SimpleDateFormat("yyyy-MM-dd").parse(dates[i]);
                 names[i] = new SimpleDateFormat("EE").format(day);

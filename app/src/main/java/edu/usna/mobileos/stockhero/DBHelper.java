@@ -44,10 +44,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 copyDataBase();
             } catch (IOException e) {
                 throw new Error("Error copying database");
-
             }
         }
-
     }
 
     /**
@@ -92,7 +90,6 @@ public class DBHelper extends SQLiteOpenHelper {
         myOutput.flush();
         myOutput.close();
         myInput.close();
-
     }
 
     public void openDataBase() throws SQLException{
@@ -120,7 +117,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public Cursor getHistory( String ticker, String Date) {
+    public Cursor getFullStockHistory(String ticker) {
         SQLiteDatabase db = getReadableDatabase();
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
