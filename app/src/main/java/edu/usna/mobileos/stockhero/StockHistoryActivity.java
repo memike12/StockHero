@@ -2,11 +2,8 @@ package edu.usna.mobileos.stockhero;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.support.v4.app.DialogFragment;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.github.mikephil.charting.animation.Easing;
@@ -24,20 +21,20 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.LargeValueFormatter;
 
 import android.graphics.Color;
-import android.support.v7.widget.Toolbar;
+
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class StockHistoryActivity extends Activity implements View.OnClickListener {
+public class StockHistoryActivity extends FragmentActivity implements View.OnClickListener, BuySellFragment.OnStockSelectedListener {
     private CombinedChart mChart;
     int tradingYear = 252;
     float[] price = new float[tradingYear];
@@ -46,37 +43,40 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
     float[] periodPrice;
     String[] periodDays;
     int[] periodVolume;
+    float openPrice;
     DBHelper db;
-    String date;
+    //String date;
     String stock;
-    Button sell;
+    Button shortsell;
     Button buy;
     Button fiveDay;
     Button thirtyDay;
     Button ninetyDay;
     Button oneYear;
+    MissionProgress mp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.display_stock);
 
-        sell = (Button) findViewById(R.id.sell);
+        shortsell = (Button) findViewById(R.id.shortsale);
         buy = (Button) findViewById(R.id.buy);
         fiveDay = (Button) findViewById(R.id.fiveDay);
         thirtyDay = (Button) findViewById(R.id.thirtyDay);
         ninetyDay = (Button) findViewById(R.id.ninetyDay);
         oneYear = (Button) findViewById(R.id.oneYear);
         buy.setOnClickListener(this);
-        sell.setOnClickListener(this);
+        shortsell.setOnClickListener(this);
         fiveDay.setOnClickListener(this);
         thirtyDay.setOnClickListener(this);
         ninetyDay.setOnClickListener(this);
         oneYear.setOnClickListener(this);
 
         Intent intent = getIntent();
-        stock = intent.getExtras().getString("stock");
-        date = intent.getExtras().getString("date");
-
+        Bundle b = intent.getExtras();
+        mp = b.getParcelable("MissionProgress");
+        stock = b.getString("stock");
         TextView stockName = (TextView) findViewById(R.id.stockName);
         TextView ticker = (TextView) findViewById(R.id.ticker);
         TextView open = (TextView) findViewById(R.id.open);
@@ -85,6 +85,7 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
             db = new DBHelper(this);
             db.createDataBase();
             db.openDataBase();
+            Log.e("Database", "Looking for " + stock);
             Cursor cs = db.getStockInfo(stock);
             stockName.setText(cs.getString(cs.getColumnIndex("company")));
             cs.close();
@@ -92,13 +93,12 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
             int y = 0;
             while(!c.isAfterLast()) {
                 y++;
-                if(c.getString(c.getColumnIndex("date")).equals(date)) {
-                    //Log.e(date,String.valueOf(y));
+                if(c.getString(c.getColumnIndex("date")).equals(mp.dateToString())) {
+                    //Log.e("Database",mp.dateToString()+ " Found");
                     for (int x = tradingYear-1; x >= 0 ; x--) {
                         price[x] = Float.parseFloat(c.getString(c.getColumnIndex("price")));
                         days[x] = c.getString(c.getColumnIndex("date"));
                         volume[x] = c.getInt(c.getColumnIndex("volume"));
-                        //Log.e("Mike", x + " / " + price[x] + " / " + days[x] );
                         c.moveToNext();
                     }
                     db.close();
@@ -107,6 +107,7 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
                 else{
                     c.moveToNext();
                 }
+                //Log.e("DATABASE", mp.dateToString()+ " NEVER FOUND");
 
             }
             c.close();
@@ -116,11 +117,11 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
             db.close();
         }
 
-        Toast.makeText(this, date, Toast.LENGTH_SHORT).show();
-        //days = getTimeframe(days);
-
+       // Toast.makeText(this, String(mp.getDate(), Toast.LENGTH_SHORT).show();
+        Log.i("Money Now", String.valueOf(mp.getMoney()));
         ticker.setText(stock);
-        open.setText(String.valueOf(price[price.length - 1]));
+        openPrice = price[price.length - 1];
+        open.setText(String.valueOf(openPrice));
 
 
         mChart = (CombinedChart) findViewById(R.id.chart1);
@@ -134,24 +135,42 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
                 CombinedChart.DrawOrder.BAR, CombinedChart.DrawOrder.BUBBLE, CombinedChart.DrawOrder.CANDLE, CombinedChart.DrawOrder.LINE, CombinedChart.DrawOrder.SCATTER
         });
 
-        //set chart time period to 5 days off the bat
+        //set chart time period to 5 days right off the bat
         makeChart(5);
+    }
+
+    public void onStockSelected(String stock, float price, int order, String action){
+        Log.i(action+ " "+ stock,String.valueOf(price*order));
+        mp.executeTrade(stock,price,order,action);
+    }
+
+    public void onDialogDismissListener(int position) {
+        Intent intent = new Intent(getBaseContext(), StockListActivity.class);
+        intent.putExtra("MissionProgress", mp);
+        startActivity(intent);
+        finish();
     }
 
     @Override
     public void onClick(View v){
         switch (v.getId()){
-            case R.id.sell:
-                Intent intent = new Intent();
-                intent.putExtra("choice", "Sell");
-                setResult(RESULT_OK, intent);
-                finish();
+            case R.id.shortsale:
+                BuySellFragment dialog = new BuySellFragment();
+                Bundle args = new Bundle();
+                args.putFloat("price",  openPrice);
+                args.putString("ticker", stock);
+                args.putString("action", "Short");
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
             case R.id.buy:
-                Intent intent2 = new Intent();
-                intent2.putExtra("choice", "Buy");
-                setResult(RESULT_OK, intent2);
-                finish();
+                dialog = new BuySellFragment();
+                args = new Bundle();
+                args.putFloat("price",  openPrice);
+                args.putString("ticker", stock);
+                args.putString("action", "Buy");
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
             case R.id.thirtyDay:
                 makeChart(30);
@@ -168,6 +187,7 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
         }
 
     }
+
     private void makeChart(int period){
         periodPrice = new float[period];
         periodVolume = new int[period];
@@ -276,10 +296,6 @@ public class StockHistoryActivity extends Activity implements View.OnClickListen
         d.addDataSet(set);
         return d;
     }
-
-//    private float[] getData(){
-//        return new float[]{134.40f, 134.84f, 135.84f, 133.97f, 132.39f};
-//    }
 
     private float getMaxFromData(float[] data){
         float max = 0;

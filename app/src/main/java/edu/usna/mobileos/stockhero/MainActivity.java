@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             MissionProgress mp = new MissionProgress(date, 0, 10000);
             Intent intent = new Intent(getBaseContext(), StockListActivity.class);
             intent.putExtra("MissionProgress", mp);
+            Log.i("Money", String.valueOf(mp.getMoney()));
             //intent.putExtra("Database", db);
             startActivity(intent);
             finish();

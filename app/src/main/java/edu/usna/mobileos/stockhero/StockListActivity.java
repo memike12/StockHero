@@ -40,12 +40,14 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
         mp = b.getParcelable("MissionProgress");
+        Log.i("Money Now", String.valueOf(mp.getMoney()));
         date = mp.dateToString();
 
         if(mp.getDay()>=4){
             nextDay.setText("End Week");
         }
         Toast.makeText(this, "Day " + String.valueOf(mp.getDay()), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,"Capitol " + mp.getMoney(),Toast.LENGTH_SHORT).show();
         ListView stockListView = (ListView) findViewById(R.id.stockListView);
 
         //The di object gives me the stocks that we're using
@@ -63,10 +65,9 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
         String stock = ((TextView)view).getText().toString();
         Intent intent = new Intent(this, StockHistoryActivity.class);
 
-        Bundle extras = new Bundle();
-        extras.putString("stock", stock);
-        extras.putString("date", date);
-        intent.putExtras(extras);
+        intent.putExtra("MissionProgress", mp);
+        intent.putExtra("stock", stock);
+        //intent.putExtra("Database", db);
         request_Code = 100;
         startActivityForResult(intent, request_Code);
     }
@@ -77,8 +78,11 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
             // check result code
             if (resultCode == RESULT_OK) {
                 // get data set with setData
-                String choice = data.getExtras().getString("choice");
-                Toast.makeText(StockListActivity.this, choice, Toast.LENGTH_SHORT).show();
+                Intent intent = getIntent();
+                Bundle b = intent.getExtras();
+                mp = b.getParcelable("MissionProgress");
+                Log.i("Money Now", String.valueOf(mp.getMoney()));
+                //Toast.makeText(this,"Capitol " + mp.getMoney(),Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -117,4 +121,5 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
             }
         }
     }
+
 }

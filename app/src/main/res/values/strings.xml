@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">StockHero</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="buy">Buy</string>
+    <string name="Sell">Sell</string>
 </resources>
