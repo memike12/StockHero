@@ -22,6 +22,10 @@
             android:name=".StockListActivity"
             >
         </activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="7d9a513dfef45aeef006dfad332c83a780775c3a" />
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

@@ -56,7 +56,8 @@ public class DBHelper extends SQLiteOpenHelper {
             String myPath = DATABASE_PATH + DATABASE_NAME;
             checkDB = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
         }catch(SQLiteException e){
-            //database does't exist yet.
+            //database doesn't exist yet.
+            Log.e("Database","Doesn't Exist");
         }
         if(checkDB != null){
             checkDB.close();
