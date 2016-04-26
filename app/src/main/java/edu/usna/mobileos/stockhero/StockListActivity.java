@@ -117,6 +117,12 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
                 Intent intent = new Intent(getBaseContext(),MainActivity.class);
                 //intent.putExtra("Database", db);
                 startActivity(intent);
+                if(!mp.longPortfolioIsEmpty()){
+
+                    ///This needs to return a list of the holdings that I have and then I need to
+                    /////do the same thing if shortportfolio isn't empty
+                    //mp.liqidate();
+                }
                 finish();
             }
         }

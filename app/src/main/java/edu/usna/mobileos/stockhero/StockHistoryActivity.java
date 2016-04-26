@@ -47,8 +47,10 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
     DBHelper db;
     //String date;
     String stock;
-    Button shortsell;
     Button buy;
+    Button sell;
+    Button shortsell;
+    Button close;
     Button fiveDay;
     Button thirtyDay;
     Button ninetyDay;
@@ -59,15 +61,18 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.display_stock);
-
-        shortsell = (Button) findViewById(R.id.shortsale);
         buy = (Button) findViewById(R.id.buy);
+        sell = (Button) findViewById(R.id.sell);
+        shortsell = (Button) findViewById(R.id.shortsale);
+        close = (Button) findViewById(R.id.close);
         fiveDay = (Button) findViewById(R.id.fiveDay);
         thirtyDay = (Button) findViewById(R.id.thirtyDay);
         ninetyDay = (Button) findViewById(R.id.ninetyDay);
         oneYear = (Button) findViewById(R.id.oneYear);
         buy.setOnClickListener(this);
+        sell.setOnClickListener(this);
         shortsell.setOnClickListener(this);
+        close.setOnClickListener(this);
         fiveDay.setOnClickListener(this);
         thirtyDay.setOnClickListener(this);
         ninetyDay.setOnClickListener(this);
@@ -122,6 +127,13 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
         ticker.setText(stock);
         openPrice = price[price.length - 1];
         open.setText(String.valueOf(openPrice));
+        if(mp.longPortfolioHasStock(stock)){
+            sell.setVisibility(View.VISIBLE);
+        }
+        if(mp.shortPortfolioHasStock(stock)){
+            shortsell.setVisibility(View.GONE);
+            close.setVisibility(View.VISIBLE);
+        }
 
 
         mChart = (CombinedChart) findViewById(R.id.chart1);
@@ -154,21 +166,39 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
     @Override
     public void onClick(View v){
         switch (v.getId()){
-            case R.id.shortsale:
+            case R.id.buy:
                 BuySellFragment dialog = new BuySellFragment();
                 Bundle args = new Bundle();
+                args.putFloat("price",  openPrice);
+                args.putString("ticker", stock);
+                args.putString("action", "Buy");
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "BuySellFragment");
+                break;
+            case R.id.sell:
+                dialog = new BuySellFragment();
+                args = new Bundle();
+                args.putFloat("price",  openPrice);
+                args.putString("ticker", stock);
+                args.putString("action", "Sell");
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "BuySellFragment");
+                break;
+            case R.id.shortsale:
+                dialog = new BuySellFragment();
+                args = new Bundle();
                 args.putFloat("price",  openPrice);
                 args.putString("ticker", stock);
                 args.putString("action", "Short");
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
-            case R.id.buy:
+            case R.id.close:
                 dialog = new BuySellFragment();
                 args = new Bundle();
                 args.putFloat("price",  openPrice);
                 args.putString("ticker", stock);
-                args.putString("action", "Buy");
+                args.putString("action", "Close");
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;

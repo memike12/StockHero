@@ -7,8 +7,10 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by root on 4/20/16.
@@ -24,7 +26,7 @@ public class MissionProgress implements Parcelable {
         this.date = date;
         this.day = day;
         this.money = money;
-        shortPortfolio= new HashMap<String, Integer>();
+        shortPortfolio= new HashMap<>();
         longPortfolio = new HashMap<String, Integer>();
     }
 
@@ -76,6 +78,18 @@ public class MissionProgress implements Parcelable {
     public DateTime getDate(){return date;}
     public int getDay(){return day;}
     public float getMoney(){return money;}
+    public boolean longPortfolioHasStock(String ticker){
+        if(longPortfolio.containsKey(ticker)){
+            return true;
+        }
+        else return false;
+    }
+    public boolean shortPortfolioHasStock(String ticker){
+        if(shortPortfolio.containsKey(ticker)){
+            return true;
+        }
+        else return false;
+    }
     public void executeTrade(String stock, float price, int order, String action){
         switch (action){
             case "Buy":
@@ -84,7 +98,7 @@ public class MissionProgress implements Parcelable {
                 break;
             case "Sell":
                 money = money + price*order;
-                if (longPortfolio.get(stock) == order) {
+                if ((Integer)longPortfolio.get(stock) == order) {
                     longPortfolio.remove(stock);
                 }
                 else {
@@ -94,18 +108,61 @@ public class MissionProgress implements Parcelable {
                 break;
             case "Short":
                 money = money - price*order;
-                shortPortfolio.put(stock,order);
+                ArrayList<Object> arrayList = new ArrayList<>(2);
+                arrayList.add(0,order);
+                arrayList.add(1,price);
+                shortPortfolio.put(stock,arrayList);
                 break;
             case "Close":
-                money = money + price*order;
-                if (shortPortfolio.get(stock) == order) {
+                arrayList =(ArrayList<Object>) shortPortfolio.get(stock);
+                int shortOrder = (Integer)arrayList.get(0);
+                float shortPrice = (float)arrayList.get(1);
+                if (shortOrder == order) {
+                    money = money + shortPrice*order*2 - price*order;
                     shortPortfolio.remove(stock);
                 }
                 else {
-                    int holdings = (Integer)shortPortfolio.get(stock);
-                    shortPortfolio.put(stock, holdings - order);
+                    money = money + shortPrice*order*2 - price*order;
+                    arrayList.set(0, shortOrder - order);
+                    shortPortfolio.put(stock, arrayList);
                 }
                 break;
         }
     }
+    public boolean longPortfolioIsEmpty(){
+        if(longPortfolio.isEmpty()){
+            return true;
+        }
+        else return false;
+    }
+    public boolean shortPortfolioIsEmpty(){
+        if(shortPortfolio.isEmpty()){
+            return true;
+        }
+        else return false;
+    }
+//    public ArrayList liquidate(){
+//        ArrayList arrayList = new ArrayList();
+//        if(!longPortfolioIsEmpty()){
+//            Iterator it = longPortfolio.entrySet().iterator();
+//            ArrayList holdings = new ArrayList();
+//            while (it.hasNext()) {
+//                HashMap.Entry pair = (HashMap.Entry)it.next();
+//                holdings.add(pair.getKey());
+//                it.remove(); // avoids a ConcurrentModificationException
+//            }
+//            arrayList.add(holdings);
+//        }
+//        if(!shortPortfolioIsEmpty()){
+//            Iterator it = shortPortfolio.entrySet().iterator();
+//            ArrayList holdings = new ArrayList();
+//            while (it.hasNext()) {
+//                HashMap.Entry pair = (HashMap.Entry)it.next();
+//                holdings.add(pair.getKey());
+//                it.remove(); // avoids a ConcurrentModificationException
+//            }
+//            arrayList.add(holdings);
+//        }
+//
+//    }
 }

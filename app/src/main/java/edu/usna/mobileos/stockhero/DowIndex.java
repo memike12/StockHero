@@ -6,7 +6,7 @@ package edu.usna.mobileos.stockhero;
  */
 public class DowIndex {
     private String[] dowHistoricalComponents = {"MMM", "AA", "HON", "AXP", "T", "BA", "CAT", "CVX",
-            "C", "EKDKQ", "KO", "DD", "XOM", "GE", "GM", "HPQ", "HD", "INTC", "IBM", "IP", "JNJ",
+            "C", "KO", "DD", "XOM", "GE", "GM", "HPQ", "HD", "INTC", "IBM", "IP", "JNJ",
             "JPM","MCD","MRK","MSFT", "MO", "PG", "UTX", "WMT", "DIS", "AIG", "PFE", "VZ", "BAC",
             "CVX", "TRV", "UNH", "GS", "NKE", "V", "AAPL"};
 
