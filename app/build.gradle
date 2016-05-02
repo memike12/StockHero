@@ -40,7 +40,7 @@ dependencies {
     compile 'net.danlew:android.joda:2.9.3'
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
     compile 'com.android.support:support-v4:23.3.0'
-    compile('com.twitter.sdk.android:twitter:1.13.0@aar') {
+    compile('com.twitter.sdk.android:twitter:1.13.1@aar') {
         transitive = true;
     }
 }

@@ -47,31 +47,30 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
     DBHelper db;
     //String date;
     String stock;
-    Button buy;
-    Button sell;
-    Button shortsell;
-    Button close;
+    Button shortsell,buy,sell,close;
     Button fiveDay;
     Button thirtyDay;
     Button ninetyDay;
     Button oneYear;
+    int longHeld =0, shortHeld=0;
     MissionProgress mp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.display_stock);
+
+        shortsell = (Button) findViewById(R.id.shortsale);
         buy = (Button) findViewById(R.id.buy);
         sell = (Button) findViewById(R.id.sell);
-        shortsell = (Button) findViewById(R.id.shortsale);
         close = (Button) findViewById(R.id.close);
         fiveDay = (Button) findViewById(R.id.fiveDay);
         thirtyDay = (Button) findViewById(R.id.thirtyDay);
         ninetyDay = (Button) findViewById(R.id.ninetyDay);
         oneYear = (Button) findViewById(R.id.oneYear);
         buy.setOnClickListener(this);
-        sell.setOnClickListener(this);
         shortsell.setOnClickListener(this);
+        sell.setOnClickListener(this);
         close.setOnClickListener(this);
         fiveDay.setOnClickListener(this);
         thirtyDay.setOnClickListener(this);
@@ -86,55 +85,53 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
         TextView ticker = (TextView) findViewById(R.id.ticker);
         TextView open = (TextView) findViewById(R.id.open);
 
+        if(mp.longPortfolioHasStock(stock)){
+            longHeld = mp.getLongHolding(stock);
+            sell.setVisibility(View.VISIBLE);
+        }
+
+        if(mp.shortPortfolioHasStock(stock)){
+            shortHeld = (Integer)mp.getShortHoldings(stock).get(0);
+            close.setVisibility(View.VISIBLE);
+        }
+
         try {
-            db = new DBHelper(this);
-            db.createDataBase();
-            db.openDataBase();
+            db = DBHelper.getsInstance(this);
+//            db.createDataBase();
+//            db.openDataBase();
             Log.e("Database", "Looking for " + stock);
             Cursor cs = db.getStockInfo(stock);
             stockName.setText(cs.getString(cs.getColumnIndex("company")));
             cs.close();
+
+            /////////TODO: This needs to change to be faster
             Cursor c = db.getFullStockHistory(stock);
-            int y = 0;
+
             while(!c.isAfterLast()) {
-                y++;
                 if(c.getString(c.getColumnIndex("date")).equals(mp.dateToString())) {
-                    //Log.e("Database",mp.dateToString()+ " Found");
                     for (int x = tradingYear-1; x >= 0 ; x--) {
                         price[x] = Float.parseFloat(c.getString(c.getColumnIndex("price")));
                         days[x] = c.getString(c.getColumnIndex("date"));
                         volume[x] = c.getInt(c.getColumnIndex("volume"));
                         c.moveToNext();
                     }
-                    db.close();
                     break;
                 }
                 else{
                     c.moveToNext();
                 }
-                //Log.e("DATABASE", mp.dateToString()+ " NEVER FOUND");
-
             }
             c.close();
         }
         catch (Exception e){
             e.printStackTrace();
-            db.close();
+//            db.close();
         }
 
-       // Toast.makeText(this, String(mp.getDate(), Toast.LENGTH_SHORT).show();
         Log.i("Money Now", String.valueOf(mp.getMoney()));
         ticker.setText(stock);
         openPrice = price[price.length - 1];
         open.setText(String.valueOf(openPrice));
-        if(mp.longPortfolioHasStock(stock)){
-            sell.setVisibility(View.VISIBLE);
-        }
-        if(mp.shortPortfolioHasStock(stock)){
-            shortsell.setVisibility(View.GONE);
-            close.setVisibility(View.VISIBLE);
-        }
-
 
         mChart = (CombinedChart) findViewById(R.id.chart1);
         mChart.setDescription("");
@@ -151,11 +148,13 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
         makeChart(5);
     }
 
+    //This executes the trade
     public void onStockSelected(String stock, float price, int order, String action){
         Log.i(action+ " "+ stock,String.valueOf(price*order));
         mp.executeTrade(stock,price,order,action);
     }
 
+    //This goes back to stock list activity but finishes the current one first
     public void onDialogDismissListener(int position) {
         Intent intent = new Intent(getBaseContext(), StockListActivity.class);
         intent.putExtra("MissionProgress", mp);
@@ -172,6 +171,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putFloat("price",  openPrice);
                 args.putString("ticker", stock);
                 args.putString("action", "Buy");
+                args.putInt("hint", longHeld);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
@@ -181,6 +181,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putFloat("price",  openPrice);
                 args.putString("ticker", stock);
                 args.putString("action", "Sell");
+                args.putInt("hint", longHeld);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
@@ -190,6 +191,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putFloat("price",  openPrice);
                 args.putString("ticker", stock);
                 args.putString("action", "Short");
+                args.putInt("hint", shortHeld);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
@@ -199,6 +201,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putFloat("price",  openPrice);
                 args.putString("ticker", stock);
                 args.putString("action", "Close");
+                args.putInt("hint", shortHeld);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;

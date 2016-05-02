@@ -1,5 +1,7 @@
 package edu.usna.mobileos.stockhero;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -11,6 +13,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * Created by root on 4/20/16.
@@ -141,28 +144,45 @@ public class MissionProgress implements Parcelable {
         }
         else return false;
     }
-//    public ArrayList liquidate(){
-//        ArrayList arrayList = new ArrayList();
-//        if(!longPortfolioIsEmpty()){
-//            Iterator it = longPortfolio.entrySet().iterator();
-//            ArrayList holdings = new ArrayList();
-//            while (it.hasNext()) {
-//                HashMap.Entry pair = (HashMap.Entry)it.next();
-//                holdings.add(pair.getKey());
-//                it.remove(); // avoids a ConcurrentModificationException
-//            }
-//            arrayList.add(holdings);
-//        }
-//        if(!shortPortfolioIsEmpty()){
-//            Iterator it = shortPortfolio.entrySet().iterator();
-//            ArrayList holdings = new ArrayList();
-//            while (it.hasNext()) {
-//                HashMap.Entry pair = (HashMap.Entry)it.next();
-//                holdings.add(pair.getKey());
-//                it.remove(); // avoids a ConcurrentModificationException
-//            }
-//            arrayList.add(holdings);
-//        }
-//
-//    }
+    public int getLongHolding(String ticker){
+        return (Integer)longPortfolio.get(ticker);
+    }
+    public ArrayList getShortHoldings(String ticker){
+        return (ArrayList) shortPortfolio.get(ticker);
+    }
+    public float liquidate(Context context){
+        float capital =0;
+        if(!longPortfolioIsEmpty()){
+            Iterator it = longPortfolio.entrySet().iterator();
+            while (it.hasNext()) {
+                String action = "Sell";
+                HashMap.Entry pair = (HashMap.Entry)it.next();
+                String stock = (String)pair.getKey();
+                int order = (Integer)pair.getValue();
+                DBHelper db = DBHelper.getsInstance(context);
+                Cursor c = db.getPriceOnDate(stock, this.dateToString());
+                float price = Float.parseFloat(c.getString(c.getColumnIndex("price")));
+                c.close();
+                executeTrade(stock,price,order,action);
+                //it.remove();
+            }
+        }
+        if(!shortPortfolioIsEmpty()){
+            Iterator it = shortPortfolio.entrySet().iterator();
+            while (it.hasNext()) {
+                String action = "Close";
+                HashMap.Entry pair = (HashMap.Entry)it.next();
+                String stock = (String)pair.getKey();
+                ArrayList<Object> arrayList = (ArrayList)pair.getValue();
+                int order = (Integer)arrayList.get(0);
+                DBHelper db = DBHelper.getsInstance(context);
+                Cursor c = db.getPriceOnDate(stock, this.dateToString());
+                float price = Float.parseFloat(c.getString(c.getColumnIndex("price")));
+                c.close();
+                executeTrade(stock,price,order,action);
+//                it.remove();
+            }
+        }
+    return money;
+    }
 }

@@ -55,9 +55,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         if(v==genData) {
             Log.i("Clicked", "Lets Go!");
-            db = new DBHelper(this);
-            db.createDataBase();
-            db.openDataBase();
+            db = db.getsInstance(this);
+            //db.createDataBase();
+            //db.openDataBase();
 
             DateTime date = generateDate();
             Log.i("Date", "Tried " + fmt.print(date));
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.i("Date", "Tried " + fmt.print(date));
             }
             Log.i("Date", fmt.print(date));
-            db.close();
+//            db.close();
             MissionProgress mp = new MissionProgress(date, 0, 10000);
             Intent intent = new Intent(getBaseContext(), StockListActivity.class);
             intent.putExtra("MissionProgress", mp);

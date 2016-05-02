@@ -20,7 +20,7 @@ import java.io.OutputStream;
 public class DBHelper extends SQLiteOpenHelper {
     private String DATABASE_PATH;
     private static String DATABASE_NAME = "stocks.db";
-
+    private static DBHelper sInstance;
     private Context myContext;
     public SQLiteDatabase myDataBase;
 
@@ -29,6 +29,14 @@ public class DBHelper extends SQLiteOpenHelper {
         this.myContext=context;
         DATABASE_PATH = myContext.getApplicationInfo().dataDir + "/databases/";
     }
+
+    public static synchronized DBHelper getsInstance(Context context){
+        if (sInstance == null){
+            sInstance = new DBHelper(context.getApplicationContext());
+        }
+        return sInstance;
+    }
+
     public void createDataBase(){
         boolean dbExist = checkDataBase();
         if(dbExist){
@@ -138,6 +146,21 @@ public class DBHelper extends SQLiteOpenHelper {
         String [] sqlSelect = {"*"};
         String sqlTables = "symbol";
         String sel = "symbol='"+ticker+"'";
+        qb.setTables(sqlTables);
+
+        Cursor c = qb.query(db, sqlSelect, sel, null,
+                null, null, null);
+        c.moveToFirst();
+        return c;
+    }
+
+    public Cursor getPriceOnDate(String ticker, String date){
+        SQLiteDatabase db = getReadableDatabase();
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+
+        String [] sqlSelect = {"*"};
+        String sqlTables = "price";
+        String sel = "symbol='"+ticker+"' AND date='"+date+"'";
         qb.setTables(sqlTables);
 
         Cursor c = qb.query(db, sqlSelect, sel, null,

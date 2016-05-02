@@ -22,6 +22,7 @@ public class BuySellFragment extends DialogFragment implements DialogInterface.O
     String stock;
     float price;
     String action;
+    int hint;
 
     public interface OnStockSelectedListener{
         void onStockSelected(String stock, float price, int order, String action);
@@ -50,9 +51,14 @@ public class BuySellFragment extends DialogFragment implements DialogInterface.O
         price = bundle.getFloat("price");
         stock = bundle.getString("ticker");
         action = bundle.getString("action");
-
+        hint = bundle.getInt("hint");
+        Log.i("Hint", String.valueOf(hint));
         View layout = inflater.inflate(R.layout.buy_sell_dialog, null);
         editText = (EditText) layout.findViewById(R.id.numPicker);
+        if(hint > 0) {
+            editText.setText(String.valueOf(hint));
+        }
+        editText.setSelection(editText.getText().length());
         builder.setView(layout)
             .setTitle(action+" "+stock)
             .setMessage("Price: "+String.valueOf(price))

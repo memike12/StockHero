@@ -91,38 +91,34 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
     @Override
     public void onClick(View v) {
         if(v == nextDay){
+            //if not at the end of the week.
             if(mp.getDay()<=3){
 
                 DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
                 DateTime date = mp.getDate();
                 date = date.plusDays(1);
 
-                db = new DBHelper(this);
-                db.createDataBase();
-                db.openDataBase();
+                db = db.getsInstance(this);
+//                db.createDataBase();
+//                db.openDataBase();
                 while(!db.CheckIfDateInDB(fmt.print(date))){
                     date=date.plusDays(1);
                 }
-                db.close();
+//                db.close();
                 Log.i("Date", fmt.print(date));
                 mp.nextDay(date);
 
                 Intent intent = new Intent(getBaseContext(), StockListActivity.class);
                 intent.putExtra("MissionProgress", mp);
-                //intent.putExtra("Database", db);
                 startActivity(intent);
                 finish();
             }
+
             else{
                 Intent intent = new Intent(getBaseContext(),MainActivity.class);
-                //intent.putExtra("Database", db);
                 startActivity(intent);
-                if(!mp.longPortfolioIsEmpty()){
-
-                    ///This needs to return a list of the holdings that I have and then I need to
-                    /////do the same thing if shortportfolio isn't empty
-                    //mp.liqidate();
-                }
+                float money = mp.liquidate(this);
+                Toast.makeText(StockListActivity.this, "Ended with $"+money, Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
