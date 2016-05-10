@@ -4,4 +4,13 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="buy">Buy</string>
     <string name="Sell">Sell</string>
+    <string name="mainTitle">StockHero</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="firstMission">Welcome to your first day at Silverman Bags! You are starting out as a stock analyst and we are going to start you off by throwing you right into trading with a small fund we set up for you to prove your trading skill. Each week we will give you a set of stocks to choose from and goals to hit for promotion.</string>
+    <string name="goodMission">This week is going to be good for you, I can feel it in my bones.</string>
+    <string name="roughMission">This is going to be a rough week according to our analysts. We\'re confident that you\'ll make great trades though.</string>
+    <string name="profileTitle">Profile</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

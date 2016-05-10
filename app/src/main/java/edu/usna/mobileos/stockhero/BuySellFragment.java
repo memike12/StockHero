@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ public class BuySellFragment extends DialogFragment implements DialogInterface.O
     float price;
     String action;
     int hint;
+    MissionProgress mp;
 
     public interface OnStockSelectedListener{
         void onStockSelected(String stock, float price, int order, String action);
@@ -52,25 +54,28 @@ public class BuySellFragment extends DialogFragment implements DialogInterface.O
         stock = bundle.getString("ticker");
         action = bundle.getString("action");
         hint = bundle.getInt("hint");
-        Log.i("Hint", String.valueOf(hint));
+        mp = bundle.getParcelable("MissionProgress");
+
         View layout = inflater.inflate(R.layout.buy_sell_dialog, null);
         editText = (EditText) layout.findViewById(R.id.numPicker);
         if(hint > 0) {
             editText.setText(String.valueOf(hint));
         }
         editText.setSelection(editText.getText().length());
+        int max = (int)Math.floor(mp.getMoney()/price);
+//        editText.setSelection(0, max);
+        editText.setFilters(new InputFilter[]{ new InputFilterMinMax("0", String.valueOf(max))});
         builder.setView(layout)
-            .setTitle(action+" "+stock)
-            .setMessage("Price: "+String.valueOf(price))
-            .setPositiveButton(action, this)
-            .setNegativeButton("Cancel", this);
+                .setTitle(action+" "+stock)
+                .setMessage("Price: "+String.valueOf(price))
+                .setPositiveButton(action, this)
+                .setNegativeButton("Cancel", this);
 
         return builder.create();
     }
 
     public void onClick(DialogInterface dialog, int id) {
         if(id == Dialog.BUTTON_POSITIVE){
-            //Log.i("purchased", editText.getText().toString());
             mCallback.onStockSelected(stock, price,Integer.valueOf(editText.getText().toString()),action);
             mCallback.onDialogDismissListener(10);
         }

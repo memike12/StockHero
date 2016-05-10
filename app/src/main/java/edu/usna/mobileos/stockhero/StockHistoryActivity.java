@@ -172,6 +172,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putString("ticker", stock);
                 args.putString("action", "Buy");
                 args.putInt("hint", longHeld);
+                args.putParcelable("MissionProgress", mp);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
@@ -182,6 +183,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putString("ticker", stock);
                 args.putString("action", "Sell");
                 args.putInt("hint", longHeld);
+                args.putParcelable("MissionProgress", mp);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
@@ -192,6 +194,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putString("ticker", stock);
                 args.putString("action", "Short");
                 args.putInt("hint", shortHeld);
+                args.putParcelable("MissionProgress", mp);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;
@@ -202,6 +205,7 @@ public class StockHistoryActivity extends FragmentActivity implements View.OnCli
                 args.putString("ticker", stock);
                 args.putString("action", "Close");
                 args.putInt("hint", shortHeld);
+                args.putParcelable("MissionProgress", mp);
                 dialog.setArguments(args);
                 dialog.show(getFragmentManager(), "BuySellFragment");
                 break;

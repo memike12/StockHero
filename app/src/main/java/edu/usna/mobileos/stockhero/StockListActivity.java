@@ -1,20 +1,20 @@
 package edu.usna.mobileos.stockhero;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * This Activity pulls in the applicable stock data and displays it in a list view
  */
-public class StockListActivity extends Activity implements AdapterView.OnItemClickListener, View.OnClickListener {
+public class StockListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, View.OnClickListener {
     MissionProgress mp;
     String date;
     int request_Code;
@@ -36,18 +36,27 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
 
         nextDay = (Button) findViewById(R.id.nextDay);
         nextDay.setOnClickListener(this);
-
+        db = db.getsInstance(this);
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
-        mp = b.getParcelable("MissionProgress");
-        Log.i("Money Now", String.valueOf(mp.getMoney()));
+        try {
+            mp = b.getParcelable("MissionProgress");
+        } catch (NullPointerException npe){
+            DateTime date = db.generateDate();
+            mp = new MissionProgress(date, 0, 10000);
+        }
         date = mp.dateToString();
+
+        ActionBar ab = getSupportActionBar();
+        int day = mp.getDay()+1;
+        ab.setTitle("Day " + day);
+        float money = mp.getMoney();
+        String formattedMoney = String.format("%.02f", money);
+        ab.setSubtitle("$"+formattedMoney);
 
         if(mp.getDay()>=4){
             nextDay.setText("End Week");
         }
-        Toast.makeText(this, "Day " + String.valueOf(mp.getDay()), Toast.LENGTH_SHORT).show();
-        //Toast.makeText(this,"Capitol " + mp.getMoney(),Toast.LENGTH_SHORT).show();
         ListView stockListView = (ListView) findViewById(R.id.stockListView);
 
         //The di object gives me the stocks that we're using
@@ -67,7 +76,6 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
 
         intent.putExtra("MissionProgress", mp);
         intent.putExtra("stock", stock);
-        //intent.putExtra("Database", db);
         request_Code = 100;
         startActivityForResult(intent, request_Code);
     }
@@ -75,17 +83,12 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // check to see which activity is returning the result
         if (requestCode == 100) {
-            // check result code
             if (resultCode == RESULT_OK) {
-                // get data set with setData
                 Intent intent = getIntent();
                 Bundle b = intent.getExtras();
                 mp = b.getParcelable("MissionProgress");
-                Log.i("Money Now", String.valueOf(mp.getMoney()));
-                //Toast.makeText(this,"Capitol " + mp.getMoney(),Toast.LENGTH_SHORT).show();
             }
         }
-
     }
 
     @Override
@@ -93,34 +96,53 @@ public class StockListActivity extends Activity implements AdapterView.OnItemCli
         if(v == nextDay){
             //if not at the end of the week.
             if(mp.getDay()<=3){
-
-                DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
-                DateTime date = mp.getDate();
-                date = date.plusDays(1);
-
-                db = db.getsInstance(this);
-//                db.createDataBase();
-//                db.openDataBase();
-                while(!db.CheckIfDateInDB(fmt.print(date))){
-                    date=date.plusDays(1);
-                }
-//                db.close();
-                Log.i("Date", fmt.print(date));
-                mp.nextDay(date);
-
+                mp.nextDay(this);
                 Intent intent = new Intent(getBaseContext(), StockListActivity.class);
                 intent.putExtra("MissionProgress", mp);
                 startActivity(intent);
                 finish();
             }
-
             else{
                 Intent intent = new Intent(getBaseContext(),MainActivity.class);
                 startActivity(intent);
-                float money = mp.liquidate(this);
-                Toast.makeText(StockListActivity.this, "Ended with $"+money, Toast.LENGTH_SHORT).show();
+                mp.liquidate(this);
                 finish();
             }
+        }
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.game_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        // Handle item selection
+        switch(item.getItemId()){
+            case R.id.newGame:
+                mp.liquidate(this);
+                Intent intent = new Intent(getBaseContext(),StockListActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
+            case R.id.endWeek:
+                mp.liquidate(this);
+                intent = new Intent(getBaseContext(),MainActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
+//            case R.id.viewProfile:
+//                intent = new Intent(getBaseContext(),ProfileActivity.class);
+//                startActivity(intent);
+//                mp.liquidate(this);
+//                finish();
+//                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 

@@ -1,9 +1,13 @@
 package edu.usna.mobileos.stockhero;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -18,17 +22,20 @@ import java.util.Objects;
 /**
  * Created by root on 4/20/16.
  */
-public class MissionProgress implements Parcelable {
+public class MissionProgress extends FragmentActivity implements Parcelable{
     private DateTime date;
     private HashMap shortPortfolio;
     private HashMap longPortfolio;
     private float money;
     private int day;
+    private float initialMoney;
+    DBHelper db;
 
     public MissionProgress(DateTime date, int day, float money){
         this.date = date;
         this.day = day;
         this.money = money;
+        this.initialMoney = money;
         shortPortfolio= new HashMap<>();
         longPortfolio = new HashMap<String, Integer>();
     }
@@ -39,9 +46,18 @@ public class MissionProgress implements Parcelable {
         money = p.readFloat();
         longPortfolio = (HashMap)p.readSerializable();
         shortPortfolio = (HashMap)p.readSerializable();
+        initialMoney = p.readFloat();
     }
 
-    public void nextDay(DateTime date){
+    public void nextDay(Context context){
+        db = db.getsInstance(context);
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
+        DateTime date = getDate();
+        date = date.plusDays(1);
+
+        while(!db.CheckIfDateInDB(fmt.print(date))){
+            date=date.plusDays(1);
+        }
         this.date = date;
         day++;
         return;
@@ -59,6 +75,7 @@ public class MissionProgress implements Parcelable {
         dest.writeFloat(money);
         dest.writeSerializable(longPortfolio);
         dest.writeSerializable(shortPortfolio);
+        dest.writeFloat(initialMoney);
     }
 
     public static final Parcelable.Creator<MissionProgress> CREATOR = new Parcelable.Creator<MissionProgress>(){
@@ -151,7 +168,10 @@ public class MissionProgress implements Parcelable {
         return (ArrayList) shortPortfolio.get(ticker);
     }
     public float liquidate(Context context){
-        float capital =0;
+        while (day <= 3){
+            nextDay(context);
+        }
+
         if(!longPortfolioIsEmpty()){
             Iterator it = longPortfolio.entrySet().iterator();
             while (it.hasNext()) {
@@ -164,7 +184,6 @@ public class MissionProgress implements Parcelable {
                 float price = Float.parseFloat(c.getString(c.getColumnIndex("price")));
                 c.close();
                 executeTrade(stock,price,order,action);
-                //it.remove();
             }
         }
         if(!shortPortfolioIsEmpty()){
@@ -180,9 +199,33 @@ public class MissionProgress implements Parcelable {
                 float price = Float.parseFloat(c.getString(c.getColumnIndex("price")));
                 c.close();
                 executeTrade(stock,price,order,action);
-//                it.remove();
             }
         }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        //Save Money Made
+        float previousEarnings = prefs.getFloat("TotalEarnings",0);
+        float totalEarnings = money + previousEarnings;
+        editor.putFloat("TotalEarnings", totalEarnings);
+
+        //Save Money Allotted
+        float previousAllotment = prefs.getFloat("TotalAllotment",0);
+        float totalAllotment = initialMoney + previousAllotment;
+        editor.putFloat("TotalAllotment", totalAllotment);
+
+        int weeks = prefs.getInt("TotalWeeks",0);
+        int totalWeeks = weeks + 1;
+        editor.putInt("TotalWeeks",totalWeeks);
+        editor.commit();
+
+//        float earnings = (money/initialMoney - 1)*100;
+//
+////        EndMissionFragment dialog = new EndMissionFragment();
+////        Bundle args = new Bundle();
+////        args.putFloat("Earnings",  earnings);
+////        dialog.setArguments(args);
+////        dialog.show(getFragmentManager(), "BuySellFragment");
     return money;
     }
 }

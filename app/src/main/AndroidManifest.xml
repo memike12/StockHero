@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.usna.mobileos.stockhero">
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -15,17 +18,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".StockHistoryActivity">
-        </activity>
-        <activity
-            android:name=".StockListActivity"
-            >
-        </activity>
+        <activity android:name=".StockHistoryActivity"></activity>
+        <activity android:name=".StockListActivity"></activity>
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="7d9a513dfef45aeef006dfad332c83a780775c3a" />
+
+        <activity
+            android:name=".ProfileActivity"
+            android:label="@string/title_activity_profile"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

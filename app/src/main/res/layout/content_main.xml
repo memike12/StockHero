@@ -3,14 +3,18 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
     android:weightSum="1">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Welcome to your first day at Silverman Bags! You are starting out as a stock analyst and we are going to start you off by throwing you right into trading with a small fund we set up for you to prove your trading skill. Each week we will give you a set of stocks to choose from and goals to hit for promotion."
-        android:id="@+id/textView"
+        android:text="@string/goodMission"
+        android:id="@+id/welcomeMessage"
         android:layout_weight="0.27" />
 
     <TextView
