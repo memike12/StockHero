@@ -2,8 +2,10 @@ package edu.usna.mobileos.stockhero;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,7 +24,7 @@ import java.util.List;
 /**
  * This Activity pulls in the applicable stock data and displays it in a list view
  */
-public class StockListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, View.OnClickListener {
+public class StockListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, View.OnClickListener, EndMissionFragment.EndMissionListener {
     MissionProgress mp;
     String date;
     int request_Code;
@@ -41,20 +43,20 @@ public class StockListActivity extends AppCompatActivity implements AdapterView.
         Bundle b = intent.getExtras();
         try {
             mp = b.getParcelable("MissionProgress");
-        } catch (NullPointerException npe){
+        } catch (NullPointerException npe) {
             DateTime date = db.generateDate();
             mp = new MissionProgress(date, 0, 10000);
         }
         date = mp.dateToString();
 
         ActionBar ab = getSupportActionBar();
-        int day = mp.getDay()+1;
+        int day = mp.getDay() + 1;
         ab.setTitle("Day " + day);
         float money = mp.getMoney();
         String formattedMoney = String.format("%.02f", money);
-        ab.setSubtitle("$"+formattedMoney);
+        ab.setSubtitle("$" + formattedMoney);
 
-        if(mp.getDay()>=4){
+        if (mp.getDay() >= 4) {
             nextDay.setText("End Week");
         }
         ListView stockListView = (ListView) findViewById(R.id.stockListView);
@@ -71,7 +73,7 @@ public class StockListActivity extends AppCompatActivity implements AdapterView.
 
 
     public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-        String stock = ((TextView)view).getText().toString();
+        String stock = ((TextView) view).getText().toString();
         Intent intent = new Intent(this, StockHistoryActivity.class);
 
         intent.putExtra("MissionProgress", mp);
@@ -93,17 +95,16 @@ public class StockListActivity extends AppCompatActivity implements AdapterView.
 
     @Override
     public void onClick(View v) {
-        if(v == nextDay){
+        if (v == nextDay) {
             //if not at the end of the week.
-            if(mp.getDay()<=3){
+            if (mp.getDay() <= 3) {
                 mp.nextDay(this);
                 Intent intent = new Intent(getBaseContext(), StockListActivity.class);
                 intent.putExtra("MissionProgress", mp);
                 startActivity(intent);
                 finish();
-            }
-            else{
-                Intent intent = new Intent(getBaseContext(),MainActivity.class);
+            } else {
+                Intent intent = new Intent(getBaseContext(), MainActivity.class);
                 startActivity(intent);
                 mp.liquidate(this);
                 finish();
@@ -113,25 +114,33 @@ public class StockListActivity extends AppCompatActivity implements AdapterView.
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.game_menu, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
+    public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.newGame:
                 mp.liquidate(this);
-                Intent intent = new Intent(getBaseContext(),StockListActivity.class);
+                Intent intent = new Intent(getBaseContext(), StockListActivity.class);
                 startActivity(intent);
                 finish();
                 return true;
             case R.id.endWeek:
+//                EndMissionFragment dialog = new EndMissionFragment();
+//                mp.liquidate(this);
+//                Bundle args = new Bundle();
+//                args.putFloat("Earnings", mp.getMoney());
+//                dialog.setArguments(args);
+//                dialog.show(getFragmentManager(), "EndMissionFragment");
+
                 mp.liquidate(this);
-                intent = new Intent(getBaseContext(),MainActivity.class);
+                intent = new Intent(getBaseContext(), EndMissionActivity.class);
+                intent.putExtra("MissionProgress", mp);
                 startActivity(intent);
                 finish();
                 return true;
@@ -146,4 +155,12 @@ public class StockListActivity extends AppCompatActivity implements AdapterView.
         }
     }
 
+    @Override
+    public void onDialogPositiveClick(android.app.DialogFragment dialog) {
+
+        Intent intent = new Intent(getBaseContext(), MainActivity.class);
+        startActivity(intent);
+//        mp.liquidate(this);
+        finish();
+    }
 }

@@ -28,16 +28,16 @@ public class MissionProgress extends FragmentActivity implements Parcelable{
     private HashMap longPortfolio;
     private float money;
     private int day;
-    private float initialMoney;
+    private float[] dailyEarnings;
     DBHelper db;
 
     public MissionProgress(DateTime date, int day, float money){
         this.date = date;
         this.day = day;
         this.money = money;
-        this.initialMoney = money;
         shortPortfolio= new HashMap<>();
         longPortfolio = new HashMap<String, Integer>();
+        dailyEarnings = new float[5];
     }
 
     public MissionProgress(Parcel p){
@@ -46,12 +46,14 @@ public class MissionProgress extends FragmentActivity implements Parcelable{
         money = p.readFloat();
         longPortfolio = (HashMap)p.readSerializable();
         shortPortfolio = (HashMap)p.readSerializable();
-        initialMoney = p.readFloat();
+        dailyEarnings = p.createFloatArray();
     }
 
     public void nextDay(Context context){
         db = db.getsInstance(context);
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
+        float todaysMoney = getDayValue(context);
+        dailyEarnings[day] = todaysMoney;
         DateTime date = getDate();
         date = date.plusDays(1);
 
@@ -75,7 +77,7 @@ public class MissionProgress extends FragmentActivity implements Parcelable{
         dest.writeFloat(money);
         dest.writeSerializable(longPortfolio);
         dest.writeSerializable(shortPortfolio);
-        dest.writeFloat(initialMoney);
+        dest.writeFloatArray(dailyEarnings);
     }
 
     public static final Parcelable.Creator<MissionProgress> CREATOR = new Parcelable.Creator<MissionProgress>(){
@@ -211,21 +213,52 @@ public class MissionProgress extends FragmentActivity implements Parcelable{
 
         //Save Money Allotted
         float previousAllotment = prefs.getFloat("TotalAllotment",0);
-        float totalAllotment = initialMoney + previousAllotment;
+        float totalAllotment = dailyEarnings[0] + previousAllotment;
         editor.putFloat("TotalAllotment", totalAllotment);
 
         int weeks = prefs.getInt("TotalWeeks",0);
         int totalWeeks = weeks + 1;
         editor.putInt("TotalWeeks",totalWeeks);
         editor.commit();
+        return money;
+    }
+    public float getDayValue(Context context){
+        DBHelper db = DBHelper.getsInstance(context);
 
-//        float earnings = (money/initialMoney - 1)*100;
-//
-////        EndMissionFragment dialog = new EndMissionFragment();
-////        Bundle args = new Bundle();
-////        args.putFloat("Earnings",  earnings);
-////        dialog.setArguments(args);
-////        dialog.show(getFragmentManager(), "BuySellFragment");
-    return money;
+        float todaysMoney = 0;
+        if(!longPortfolioIsEmpty()){
+            Iterator it = longPortfolio.entrySet().iterator();
+            while (it.hasNext()) {
+                HashMap.Entry pair = (HashMap.Entry)it.next();
+                String stock = (String)pair.getKey();
+                int order = (Integer)pair.getValue();
+                Cursor c = db.getPriceOnDate(stock, this.dateToString());
+                float price = Float.parseFloat(c.getString(c.getColumnIndex("price")));
+                todaysMoney = todaysMoney + price*order;
+                c.close();
+            }
+        }
+        if(!shortPortfolioIsEmpty()){
+            Iterator it = shortPortfolio.entrySet().iterator();
+            while (it.hasNext()) {
+                HashMap.Entry pair = (HashMap.Entry)it.next();
+                String stock = (String)pair.getKey();
+                ArrayList<Object> arrayList = (ArrayList)pair.getValue();
+                int order = (Integer)arrayList.get(0);
+                Cursor c = db.getPriceOnDate(stock, this.dateToString());
+                float price = Float.parseFloat(c.getString(c.getColumnIndex("price")));
+                c.close();
+                //Need to figure out how to add this to todaysMoney correctly.
+                //I probably already did in MissionProgress.executeTrade()
+                arrayList =(ArrayList<Object>) shortPortfolio.get(stock);
+                float shortPrice = (float)arrayList.get(1);
+                todaysMoney = todaysMoney + shortPrice*order*2 - price*order;
+            }
+        }
+
+        return todaysMoney;
+    }
+    public float[] getDailyEarnings(){
+        return dailyEarnings;
     }
 }

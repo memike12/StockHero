@@ -13,9 +13,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.twitter.sdk.android.Twitter;
-import com.twitter.sdk.android.core.TwitterAuthConfig;
-import io.fabric.sdk.android.Fabric;
+//import com.twitter.sdk.android.Twitter;
+//import com.twitter.sdk.android.core.TwitterAuthConfig;
+//import io.fabric.sdk.android.Fabric;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -32,8 +32,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
-        Fabric.with(this, new Twitter(authConfig));
+//        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+//        Fabric.with(this, new Twitter(authConfig));
         JodaTimeAndroid.init(this);
         setContentView(R.layout.content_main);
 
